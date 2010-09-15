@@ -1,0 +1,90 @@
+Intarray
+--------
+
+PHP arrays are overkill for storing primitive integer values. They are slow and
+consume huge amounts of memory. Did I mention that serialization of PHP arrays
+adds a lot of overhead?
+
+**Intarray** (Integer array) PHP extension is a space and time efficient tool for
+handling large int32_t arrays and performing lookups and set operations. Basically
+each intarray is just a PHP binary string and Intarray extension provides a
+bunch of functions for performing operations on it.
+
+Some real world use cases with user ids:
+
+- Is user online? (binary search to array of online users)
+- Gimme common friends of me and some other user (intersection of two intarrays)
+- Store members of a group to cache in an efficient manner
+- And so on..
+
+Usage
+~~~~~
+
+Intarray has two modes of operation:
+
+1. Array - Values in random order. May contain duplicates.
+2. Set - Unique values in ascending order.
+
+The latter mode enables use of binary search and set operations that utilize
+merge algorithm. It is up to the user to ensure that appropriate functions are
+used on each type of array.
+
+Examples
+~~~~~~~~
+
+::
+
+  <?php  // Binary search
+         
+         // Create an empty array full of zeroes
+         $a = intarray_create(100);
+         // Fill it with some values in ascending order
+         for ($n = 0; $n < 100; $n++) intarray_set($a, $n, $n * 4);
+         // Perform an O(log n) search and find index of value 188
+         $index = intarray_binarysearch($a, 188);
+  ?>
+
+
+... and we got 47::
+
+  <?php	// Union
+        
+        // Create two intarrays
+        $a = intarray_create_from_array(array(1, 2, 3));
+        $b = intarray_create_from_array(array(3, 4, 5));
+        // Get a union of them
+        $u = intarray_union($a, $b);
+        // Dump to screen
+        intarray_dump($u);
+  ?>
+
+
+... and we got { 1, 2, 3, 4, 5 }
+
+API Doc
+~~~~~~~
+
+See intarray.php (and intarray.c)
+
+How to install
+~~~~~~~~~~~~~~
+
+==== Compiling ====
+
+1. phpize
+
+If you use GCC:
+2. ./configure CFLAGS="-O2 -g" --enable-intarray
+
+If you use ICC (Intel C Compiler)
+2. ./configure CFLAGS=" -no-prec-div -O3 -xO -unroll2 -g" CC=icc --enable-intarray
+
+3. make
+4. ( make test)
+5. make install
+6. intarray.so is installed in the default extensions directory
+
+==== Add to php.ini ====
+
+extension=intarray.so
+
