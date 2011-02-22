@@ -72,6 +72,7 @@ PHP_FUNCTION(intarray_add);
 PHP_FUNCTION(intarray_slice);
 PHP_FUNCTION(intarray_shuffle);
 PHP_FUNCTION(intarray_check);
+PHP_FUNCTION(intarray_subset);
 
 /* 
   	Declare any global variables you may need between the BEGIN

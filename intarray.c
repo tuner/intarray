@@ -74,6 +74,7 @@ zend_function_entry intarray_functions[] = {
 	PHP_FE(intarray_slice, NULL)
 	PHP_FE(intarray_shuffle, NULL)
 	PHP_FE(intarray_check, NULL)
+	PHP_FE(intarray_subset, NULL)
 	{NULL, NULL, NULL}	/* Must be the last line in intarray_functions[] */
 };
 /* }}} */
@@ -683,6 +684,75 @@ PHP_FUNCTION(intarray_add) {
 	}
 
 	RETURN_LONG(INTARRAY_NOT_FOUND);
+}
+/* }}} */
+/* {{{ proto string intarray_subset(string intarray, int min, int max)
+   Returns a subset of a sorted intarray. Min and max parameters define set boundaries (inclusive).
+*/
+PHP_FUNCTION(intarray_subset) {
+	zval *var_array;
+	long boundary_min, boundary_max;
+	long index_min, index_max;
+
+	int32_t *src_array;
+	size_t src_length;
+	int32_t *subset_array;
+	size_t subset_length;
+
+	/* TODO: accept NULL or FALSE as undefined and replace. */
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll", &var_array, &boundary_min, &boundary_max) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	/* checking intarray */
+	if (intarray_check(var_array, -1) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	/* check sensible boundaries */
+	if (boundary_max < boundary_min) {
+		zend_error(E_WARNING, "Insensible boundaries. Max < min.");
+		RETURN_FALSE;
+	}
+
+	src_array = INTARRAY_DATA(var_array);
+	src_length = INTARRAY_LENGTH(var_array);
+
+	/* check for empty source */
+	if (src_length <= 0) {
+		RETURN_EMPTY_STRING();
+	}
+
+	/* binarysearch_slot return -1 if exact match is found */
+	index_min = intarray_binarysearch_slot(INTARRAY_DATA(var_array), INTARRAY_LENGTH(var_array), boundary_min);
+	if (index_min == -1) {
+		index_min = intarray_binarysearch(INTARRAY_DATA(var_array), INTARRAY_LENGTH(var_array), boundary_min);
+	}
+
+	index_max = intarray_binarysearch_slot(INTARRAY_DATA(var_array), INTARRAY_LENGTH(var_array), boundary_max);
+	if (index_max == -1) {
+		index_max = intarray_binarysearch(INTARRAY_DATA(var_array), INTARRAY_LENGTH(var_array), boundary_max);
+		index_max++; /* boundaries are inclusive */
+	}
+
+
+//	zend_error(E_NOTICE, "min: %d, max: %d", (int)index_min, (int)index_max);
+
+	/* If subset upper boundary does not reach lower boundary of source set */
+	if (index_max <= 0 && src_array[0] != (int32_t)boundary_max) {
+		RETURN_EMPTY_STRING();
+	}
+
+	if (index_min >= src_length) {
+		RETURN_EMPTY_STRING();
+	}
+
+	subset_length = index_max - index_min;
+	subset_array = (int32_t *)emalloc(sizeof(int32_t) * ((size_t) subset_length + 1));
+	memcpy(subset_array, src_array + index_min, subset_length * sizeof(int32_t));
+	subset_array[subset_length] = 0; /* terminate with null(s) */
+
+	RETURN_STRINGL((char *)subset_array, subset_length * sizeof(int32_t), 0);
 }
 /* }}} */
 /* {{{ proto integer intarray_delete(string array, int index [, bool contract = true])
