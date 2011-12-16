@@ -39,6 +39,21 @@ echo "\n";
 intarray_dump(intarray_slice($intarray, 2));
 echo "\n";
 
+echo "single element\n";
+$intarray = intarray_create_from_array(array(1));
+
+intarray_dump(intarray_slice($intarray, 1));
+echo "\n";
+
+intarray_dump(intarray_slice($intarray, 0));
+echo "\n";
+
+intarray_dump(intarray_slice($intarray, -1));
+echo "\n";
+
+intarray_dump(intarray_slice($intarray, -2));
+echo "\n";
+
 echo "empty sets\n";
 intarray_dump(intarray_slice('', 0));
 echo "\n";
@@ -60,6 +75,11 @@ echo "\n";
 { 4, 5 }
 { }
 { 3, 4, 5 }
+single element
+{ }
+{ 1 }
+{ 1 }
+{ 1 }
 empty sets
 { }
 { }

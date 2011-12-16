@@ -879,7 +879,7 @@ PHP_FUNCTION(intarray_slice) {
 	} else if (offset < 0 && ((long)num + offset) < 0) { 
 		/* offset negative, size+offset negative */
 		offset = 0;
-	} else if (offset < 0 && ((long)num + offset) > 0) {
+	} else if (offset < 0 && ((long)num + offset) >= 0) {
 		offset = (long)num + offset;
 	}
 
